@@ -1,0 +1,56 @@
+language: cpp
+
+dist: xenial
+
+os:
+  - linux
+  - osx
+
+compiler:
+  - clang
+  - gcc
+
+matrix:
+  allow_failures:
+    - os: osx
+
+addons:
+  apt:
+    sources:
+      - sourceline: "ppa:beineri/opt-qt-5.11.2-xenial"
+    packages:
+      - cmake
+      - extra-cmake-modules
+      - qt511-meta-minimal
+      - qt511location 
+      - qt511sensors
+      - qt511webchannel
+      - libxcomposite-dev
+      - libgstreamer1.0-dev
+      - libgstreamer-plugins-bad1.0-dev
+      - libgstreamer-plugins-base1.0-dev
+      - libhyphen-dev
+      - gperf
+      - ninja-build
+      - libgl-dev
+  homebrew:
+    packages:
+      - cmake
+      - qt
+      - libpng
+      - libjpeg-turbo
+      - ninja
+
+script:
+  - if [ ${TRAVIS_OS_NAME} == "linux" ] ; then
+      export QTDIR="/opt/qt511" ; 
+      source ${QTDIR}/bin/qt511-env.sh ;
+    fi
+  - mkdir build && cd build
+  - if [ ${TRAVIS_OS_NAME} == "osx" ] ; then
+      cmake -DPORT=Qt -DCMAKE_INSTALL_PREFIX="${TRAVIS_BUILD_DIR}/usr" -G Ninja -DCMAKE_MAKE_PROGRAM=$(which ninja) -DCMAKE_PREFIX_PATH=/usr/local/opt/qt/ -DSQLITE_INCLUDE_DIR=/usr/local/opt/sqlite3/include -DSQLITE_LIBRARIES=/usr/local/opt/sqlite3/lib/libsqlite3.dylib .. ;
+    else
+      cmake -DPORT=Qt -DCMAKE_INSTALL_PREFIX="${TRAVIS_BUILD_DIR}/usr" -G Ninja -DCMAKE_MAKE_PROGRAM=$(which ninja) .. ;
+    fi
+  - cd ${TRAVIS_BUILD_DIR}
+  - cmake --build build
